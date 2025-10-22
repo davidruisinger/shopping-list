@@ -12,6 +12,7 @@ export async function GET() {
       "Tomaten",
       "Paprika",
       "Klopapier",
+      "Spüli",
     ],
   });
 }
