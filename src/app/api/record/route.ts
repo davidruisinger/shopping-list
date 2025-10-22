@@ -86,7 +86,9 @@ export async function POST(req: Request) {
       // response_format: "json"
     });
 
-    return new Response(JSON.stringify({ text: tr.text ?? "" }), {
+    const cleanText = (tr.text ?? "").trim().replace(/[.!?]+$/, "");
+
+    return new Response(JSON.stringify({ text: cleanText }), {
       status: 200,
       headers: { "content-type": "application/json" },
     });
