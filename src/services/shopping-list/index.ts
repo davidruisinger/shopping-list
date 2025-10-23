@@ -8,7 +8,7 @@ export const getItems = async () => {
 };
 
 export const addItem = async (item: string) => {
-  await kv.lpush(KEY, item.trim());
+  await kv.rpush(KEY, item.trim());
 };
 
 export const removeItem = async (item: string) => {
