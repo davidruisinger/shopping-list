@@ -2,7 +2,7 @@ import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import { verifyBearer } from "@/services/auth";
-import { addItem, getItems } from "@/services/shopping-list";
+import { addItem, getItems, removeItem } from "@/services/shopping-list";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -127,6 +127,54 @@ export async function POST(req: Request) {
       {
         error: err?.message ?? "Transcription failed",
       },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    // --- Auth guard ---
+    if (!verifyBearer(req)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // --- Basic validation ---
+    const ct = req.headers.get("content-type") || "";
+    if (!ct.toLowerCase().includes("multipart/form-data")) {
+      return NextResponse.json(
+        {
+          error: "Use multipart/form-data with an 'item' field.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // --- Parse form data ---
+    const form = await req.formData();
+    const item = form.get("item");
+
+    if (!item || typeof item !== "string") {
+      return NextResponse.json(
+        { error: "Missing or invalid 'item' field in form data" },
+        { status: 400 }
+      );
+    }
+
+    // --- Remove item from list ---
+    await removeItem(item.trim());
+
+    // --- Get updated list ---
+    const items = await getItems();
+
+    return NextResponse.json({
+      removed: item.trim(),
+      items: items,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json(
+      { error: err?.message ?? "Failed to remove item" },
       { status: 500 }
     );
   }
