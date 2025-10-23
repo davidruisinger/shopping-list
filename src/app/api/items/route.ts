@@ -113,13 +113,13 @@ export async function POST(req: Request) {
 
     const cleanText = (tr.text ?? "").trim().replace(/[.!?]+$/, "");
 
-    await addItem(cleanText);
+    if (cleanText.length > 0) {
+      await addItem(cleanText);
+    }
+
     const items = await getItems();
 
-    return NextResponse.json({
-      added: cleanText,
-      items: items,
-    });
+    return NextResponse.json({ added: cleanText, items: items });
   } catch (err: any) {
     console.error(err);
 
