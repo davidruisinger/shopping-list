@@ -113,13 +113,27 @@ export async function POST(req: Request) {
 
     const cleanText = (tr.text ?? "").trim().replace(/[.!?]+$/, "");
 
+    let added = null;
+    let removed = null;
+
     if (cleanText.length > 0) {
-      await addItem(cleanText);
+      // Get current items to check if item already exists
+      const currentItems = await getItems();
+
+      if (currentItems.includes(cleanText)) {
+        // Item exists, remove it
+        await removeItem(cleanText);
+        removed = cleanText;
+      } else {
+        // Item doesn't exist, add it
+        await addItem(cleanText);
+        added = cleanText;
+      }
     }
 
     const items = await getItems();
 
-    return NextResponse.json({ added: cleanText, items: items });
+    return NextResponse.json({ added, removed, items });
   } catch (err: any) {
     console.error(err);
 
